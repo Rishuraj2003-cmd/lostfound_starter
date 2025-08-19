@@ -57,9 +57,10 @@ export default function NewReport() {
   
 
   return (
-    <div className="container-page py-8">
-      <div className="max-w-2xl mx-auto card p-6">
-        <h1 className="text-xl font-bold mb-4">Post a Lost/Found Report</h1>
+    
+    <div className="min-h-screen bg-gradient-to-br from-blue-100 via-purple-100 to-pink-100 py-12 px-4">
+      <div className="max-w-3xl mx-auto bg-white shadow-xl rounded-2xl p-8">
+        <h1 className="text-xl font-bold mb-4 text-blue-600">Post a Lost/Found Report</h1>
 
         <form onSubmit={submit} className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

@@ -3,14 +3,20 @@ import React from 'react';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import './styles/tailwind.css';
+
+// Context
+import { AuthProvider } from './context/AuthContext.jsx';
+
+// Components
 import App from './App.jsx';
 import Home from './pages/Home.jsx';
 import SignIn from './pages/SignIn.jsx';
 import SignUp from './pages/SignUp.jsx';
 import NewReport from './pages/NewReport.jsx';
 import ReportDetail from './pages/ReportDetail.jsx';
-import { AuthProvider } from './context/AuthContext.jsx';  // ✅ added
+
+// Styles (✅ only keep Tailwind with custom utilities)
+import './styles/tailwind.css';
 
 const queryClient = new QueryClient();
 
@@ -18,7 +24,7 @@ createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
-        <AuthProvider>   {/* ✅ wrap here */}
+        <AuthProvider>
           <Routes>
             <Route path="/" element={<App />}>
               <Route index element={<Home />} />

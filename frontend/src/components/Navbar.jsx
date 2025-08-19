@@ -6,11 +6,11 @@ export default function Navbar() {
   const { user, logout } = useAuth();
 
   return (
-    <nav className="flex justify-between items-center p-4 bg-gray-100 shadow">
-      <Link to="/" className="font-bold text-xl">Lost & Found</Link>
+    <nav className="flex justify-between items-center p-4 bg-blue-300 shadow">
+      <Link to="/" className="font-bold text-xl hover:text-indigo-600 transition">Lost & Found</Link>
       <div className="space-x-4">
-        <Link to="/reports/new" className="hover:underline ">➕ Post Report</Link>
-        <Link to="/reports" className="hover:underline">📋 All Reports</Link>
+        <Link to="/reports/new" className="hover:underline hover:text-indigo-600 transition "> Post Report</Link>
+        <Link to="/" className="hover:underline hover:text-indigo-600 transition"> All Reports</Link>
       </div>
       <div>
         {user ? (
@@ -26,7 +26,7 @@ export default function Navbar() {
             </button>
           </div>
         ) : (
-          <Link to="/signin" className="text-blue-500">Sign In</Link>
+          <Link to="/signin" className="text-gray-700 hover:text-indigo-600 transition">Sign In</Link>
         )}
       </div>
     </nav>
