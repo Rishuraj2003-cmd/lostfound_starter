@@ -37,7 +37,7 @@ import passport from 'passport';
 import { env } from './config/env.js';
 import authRoutes from './routes/authRoutes.js';
 import reportRoutes from './routes/reportRoutes.js'; // <-- 1. ADD THIS IMPORT
-
+import commentRoutes from './routes/commentRoutes.js';
 // Import passport config to execute it
 import './config/passport.js';
 
@@ -55,7 +55,7 @@ app.use('/uploads', express.static('uploads'));
 // API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/reports', reportRoutes); // <-- 2. ADD THIS LINE
-
+app.use('/api/comments', commentRoutes);
 // ... your errorHandler and other code
 
 export default app;

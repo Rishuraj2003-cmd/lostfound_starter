@@ -1,3 +1,5 @@
+//src/routes/commentRoute.js
+
 import { Router } from 'express';
 import { createComment, listComments } from '../controllers/commentController.js';
 import { auth } from '../middleware/auth.js';

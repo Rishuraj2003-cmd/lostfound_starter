@@ -26,9 +26,7 @@ export default function ReportDetail() {
     });
 
     socket.emit("joinReport", id);
-    socket.on("comment:new", (c) =>
-      setComments((prev) => [...prev, c])
-    );
+    socket.on("comment:new", (c) => setComments((prev) => [...prev, c]));
 
     return () => socket.disconnect();
   }, [id]);
@@ -38,6 +36,16 @@ export default function ReportDetail() {
     e.preventDefault();
     const body = e.target.body.value;
     if (!body) return;
+
+    // Optimistic update: show immediately
+    const temp = {
+      _id: Date.now(),
+      body,
+      author: { name: "You" },
+      createdAt: new Date().toISOString(),
+    };
+    setComments((prev) => [...prev, temp]);
+
     await api.post("/comments", { reportId: id, body });
     e.target.reset();
   }
@@ -56,21 +64,22 @@ export default function ReportDetail() {
 
           {/* Images */}
           <div className="mt-4 grid grid-cols-2 md:grid-cols-3 gap-3">
-          {report.images?.map((s, i) => {
-          const apiBase =
-          import.meta.env.VITE_API_URL?.replace("/api", "") || "http://localhost:5001";
-          const imageUrl = s.startsWith("http") ? s : `${apiBase}/${s}`;
+            {report.images?.map((s, i) => {
+              const apiBase =
+                import.meta.env.VITE_API_URL?.replace("/api", "") ||
+                "http://localhost:5001";
+              const imageUrl = s.startsWith("http") ? s : `${apiBase}/${s}`;
 
-    return (
-      <img
-        key={i}
-        src={imageUrl}
-        alt="Report"
-        className="w-full h-40 object-cover rounded"
-      />
-    );
-  })}
-</div>
+              return (
+                <img
+                  key={i}
+                  src={imageUrl}
+                  alt="Report"
+                  className="w-full h-40 object-cover rounded"
+                />
+              );
+            })}
+          </div>
 
           <p className="mt-4">{report.description}</p>
         </div>
@@ -81,7 +90,13 @@ export default function ReportDetail() {
           <div className="space-y-3 max-h-80 overflow-auto">
             {comments.map((c) => (
               <div key={c._id} className="border rounded p-2 text-sm">
-                {c.body}
+                <div className="flex justify-between text-xs text-gray-500">
+                  <span className="font-semibold">
+                    {c.author?.name || "Anonymous"}
+                  </span>
+                  <span>{new Date(c.createdAt).toLocaleString()}</span>
+                </div>
+                <div>{c.body}</div>
               </div>
             ))}
           </div>
