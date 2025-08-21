@@ -1,68 +1,8 @@
 
-/*
-import bcrypt from 'bcrypt';
-import User from '../models/User.js';
-import { signAccess } from '../utils/tokens.js';
-
-// REGISTER
-export async function register(req, res) {
-  try {
-    const { name, email, password } = req.body;
-
-    if (!name || !email || !password) {
-      return res.status(400).json({ message: "Name, email and password are required" });
-    }
-
-    const exists = await User.findOne({ email });
-    if (exists) {
-      return res.status(409).json({ message: "Email already used" });
-    }
-
-    const passwordHash = await bcrypt.hash(password, 10);
-    const user = await User.create({ name, email, passwordHash });
-    const token = signAccess(user);
-
-    // cookie (optional if you want browser-only auth)
-    res.cookie("accessToken", token, { httpOnly: true, sameSite: "lax" });
-
-    // response body (needed for Postman/frontend)
-    res.status(201).json({
-      user: { id: user._id, name: user.name, email: user.email, role: user.role },
-      token   // 👈 now client can see and save it
-    });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-}
-
-// LOGIN
-export async function login(req, res) {
-  const { email, password } = req.body;
-  const user = await User.findOne({ email });
-  if (!user) return res.status(401).json({ message: "Invalid credentials" });
-
-  const ok = await bcrypt.compare(password, user.passwordHash);
-  if (!ok) return res.status(401).json({ message: "Invalid credentials" });
-
-  const token = signAccess(user);
-
-  // cookie (browser sessions)
-  res.cookie("accessToken", token, { httpOnly: true, sameSite: "lax" });
-
-  // response body
-  res.json({
-    user: { id: user._id, name: user.name, email: user.email, role: user.role },
-    token   // 👈 this was missing earlier
-  });
-}
-
-// ME
-export function me(req, res) {
-  if (!req.user) return res.status(401).json({ message: "Unauthenticated" });
-  res.json({ user: { id: req.user.id, role: req.user.role } });
-}
-*/
 // src/controllers/authController.js
+import crypto from "crypto";
+
+import nodemailer from "nodemailer";
 import bcrypt from 'bcrypt';
 import User from '../models/User.js';
 import { signAccess } from '../utils/tokens.js';
@@ -195,6 +135,76 @@ export async function verifyOtp(req, res) {
     }
 }
 
+// --- FORGOT PASSWORD ---
+export async function forgotPassword(req, res) {
+  try {
+    const { email } = req.body;
+    const user = await User.findOne({ email });
+    if (!user) {
+      // avoid leaking which emails exist if you prefer:
+      // return res.json({ message: "If the email exists, a reset link was sent." });
+      return res.status(404).json({ message: "No account found with that email" });
+    }
+
+    // Create token valid for 1 hour
+    const resetToken = crypto.randomBytes(20).toString("hex");
+    user.resetToken = resetToken;
+    user.resetTokenExpires = Date.now() + 60 * 60 * 1000;
+    await user.save();
+
+    const resetUrl = `${process.env.CLIENT_URL}/reset-password/${resetToken}`;
+
+    const transporter = nodemailer.createTransport({
+      service: "Gmail",
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
+    });
+
+    await transporter.sendMail({
+      to: user.email,
+      subject: "Password Reset Request",
+      html: `
+        <p>Hello ${user.name},</p>
+        <p>You requested to reset your password.</p>
+        <p><a href="${resetUrl}">Click here</a> to set a new password. The link expires in 1 hour.</p>
+      `,
+    });
+
+    res.json({ message: "Password reset link sent to your email" });
+  } catch (err) {
+    console.error("Forgot password error:", err);
+    res.status(500).json({ message: "Server error during forgot password" });
+  }
+}
+
+// --- RESET PASSWORD ---
+export async function resetPassword(req, res) {
+  try {
+    const { token } = req.params;
+    const { password } = req.body;
+
+    const user = await User.findOne({
+      resetToken: token,
+      resetTokenExpires: { $gt: Date.now() },
+    });
+
+    if (!user) {
+      return res.status(400).json({ message: "Invalid or expired token" });
+    }
+
+    user.passwordHash = await bcrypt.hash(password, 10);
+    user.resetToken = undefined;
+    user.resetTokenExpires = undefined;
+    await user.save();
+
+    res.json({ message: "Password has been reset successfully" });
+  } catch (err) {
+    console.error("Reset password error:", err);
+    res.status(500).json({ message: "Server error during reset password" });
+  }
+}
 
 // ME (no changes)
 export function me(req, res) {

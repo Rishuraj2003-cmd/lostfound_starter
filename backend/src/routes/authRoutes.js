@@ -1,18 +1,8 @@
-// routes/authroutes
-/*
-import { Router } from 'express';
-import { register, login, me } from '../controllers/authController.js';
-import { auth } from '../middleware/auth.js';
-const r = Router();
-r.post('/register', register);
-r.post('/login', login);
-r.get('/me', auth(true), me);
-export default r;
-*/
+
 // src/routes/authRoutes.js
 import { Router } from "express";
 import passport from "passport";
-import { register, login, me, verifyOtp } from "../controllers/authController.js";
+import { register, login, me, verifyOtp, forgotPassword, resetPassword } from "../controllers/authController.js";
 import { auth } from "../middleware/auth.js";
 import { signAccess } from "../utils/tokens.js"; // ✅ needed
 
@@ -39,7 +29,8 @@ r.get("/google/callback",
   }
 );
 
-
+r.post("/reset-password/:token", resetPassword);
+r.post("/forgot-password", forgotPassword);
 // OTP Verification
 r.post("/verify-otp", verifyOtp);
 
