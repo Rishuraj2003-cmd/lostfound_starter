@@ -222,7 +222,28 @@ export async function resetPassword(req, res) {
 }
 
 // ME (no changes)
-export function me(req, res) {
-  if (!req.user) return res.status(401).json({ message: "Unauthenticated" });
-  res.json({ user: { id: req.user.id, role: req.user.role } });
+// --- FIXED: ME ---
+export async function me(req, res) {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ message: "Unauthenticated" });
+    }
+
+    // Fetch full user details from DB
+    const user = await User.findById(req.user.id).select("name email _id");
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.json({
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Server error fetching profile" });
+  }
 }
