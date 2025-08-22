@@ -12,8 +12,8 @@ import { Server } from "socket.io";
 import app from "./app.js";
 import { connectDB } from "./config/db.js";
 import { env } from "./config/env.js";
-import testRoute from "./routes/testRoutes.js";
-import commentRoutes from "./routes/commentRoutes.js";  // ✅ import
+import commentRoutes from "./routes/commentRoutes.js";  
+import Visitor from './models/Visitor.js';
 
 const server = http.createServer(app);
 const io = new Server(server, {
@@ -30,12 +30,19 @@ app.use((req, res, next) => {
   next();
 });
 
-// routes
-app.use("/api", testRoute);
-app.use("/api/comments", commentRoutes);   // ✅ mount
+app.use("/api/comments", commentRoutes);   
+
 
 app.get("/api/health", (req, res) => {
   res.json({ status: "OK", message: "Backend is running 🚀" });
+});
+
+// Get current visitor count
+
+app.get("/api/visitor", async (req, res) => {
+  let visitor = await Visitor.findOne();
+  if (!visitor) visitor = { count: 0 };
+  res.json({ count: visitor.count });
 });
 
 // socket handling
@@ -51,6 +58,7 @@ io.on("connection", (socket) => {
     console.log("socket disconnected", socket.id);
   });
 });
+
 
 const port = env.PORT;
 await connectDB();

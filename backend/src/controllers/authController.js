@@ -1,7 +1,7 @@
 
 // src/controllers/authController.js
 import crypto from "crypto";
-
+import Visitor from "../models/Visitor.js"; // your visitor model
 import nodemailer from "nodemailer";
 import bcrypt from 'bcrypt';
 import User from '../models/User.js';
@@ -65,11 +65,26 @@ export async function login(req, res) {
     });
   }
 
+   // --- NEW: Increment visitor count on successful login ---
+   let visitor = await Visitor.findOne();
+   if (!visitor) {
+     visitor = new Visitor({ count: 0 });
+   }
+   visitor.count += 1;
+   await visitor.save();
+ 
+   // Emit the updated count to all connected clients via socket
+   if (req.io) {
+     req.io.emit("visitorCount", visitor.count);
+   }
+
+
   const token = signAccess(user);
   res.cookie("accessToken", token, { httpOnly: true, sameSite: "lax" });
   res.json({
     user: { id: user._id, name: user.name, email: user.email, role: user.role },
     token,
+    visitorCount: visitor.count,
   });
 }
 

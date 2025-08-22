@@ -1,4 +1,3 @@
-
 // frontend/src/App.jsx
 import { Routes, Route } from "react-router-dom";
 
@@ -14,11 +13,15 @@ import ProtectedRoute from "./components/ProtectedRoute.jsx";
 import AuthCallback from "./pages/AuthCallback.jsx";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
+import Dashboard from "./pages/Dashboard.jsx";
+import Footer from "./components/Footer.jsx";
 
 export default function App() {
   return (
     <>
       <Navbar />
+      
+      {/* All routes */}
       <Routes>
         {/* Public Routes */}
         <Route path="/signin" element={<SignIn />} />
@@ -26,14 +29,20 @@ export default function App() {
         <Route path="/otp-verify" element={<OtpVerify />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password/:token" element={<ResetPassword />} />
+        
         {/* Google OAuth Callback Route */}
         <Route path="/auth/callback" element={<AuthCallback />} />
+
         {/* Protected Routes */}
         <Route path="/" element={<ProtectedRoute><Home /></ProtectedRoute>} />
         <Route path="/reports" element={<ProtectedRoute><Reports /></ProtectedRoute>} />
         <Route path="/reports/new" element={<ProtectedRoute><NewReport /></ProtectedRoute>} />
         <Route path="/reports/:id" element={<ProtectedRoute><ReportDetail /></ProtectedRoute>} />
+        <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
       </Routes>
+
+      {/* Footer is outside Routes! */}
+      <Footer />
     </>
   );
 }

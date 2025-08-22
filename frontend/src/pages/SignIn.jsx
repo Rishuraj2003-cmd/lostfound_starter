@@ -1,6 +1,6 @@
 
 // src/pages/SignIn.jsx
-import React, { useState } from "react";
+import React, {useEffect, useState } from "react";
 import { api } from "../api/client";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
