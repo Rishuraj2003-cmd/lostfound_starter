@@ -4,18 +4,18 @@ import { api } from "../api/client";
 export default function Dashboard() {
   const [reports, setReports] = useState([]);
 
+ 
   useEffect(() => {
-    api.get("/reports/my")
-      .then((res) => setReports(res.data))
+    api.get("/users/dashboard")
+      .then((res) => setReports(res.data.reports))
       .catch((err) => console.error("Error loading my reports", err));
   }, []);
-
   return (
     <div className="container-page py-8">
       <h1 className="text-2xl font-bold mb-4">My Dashboard</h1>
 
       {reports.length === 0 ? (
-        <p className="text-gray-500">You haven’t posted any reports yet.</p>
+        <p className="text-gray-500">You haven't posted any reports yet.</p>
       ) : (
         <div className="grid gap-4">
           {reports.map((r) => (

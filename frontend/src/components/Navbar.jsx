@@ -15,11 +15,12 @@ export default function Navbar() {
       <div>
         {user ? (
           <div className="flex items-center gap-4">
+            <Link to="/dashboard" className="hover:underline hover:text-indigo-600 transition">Dashboard</Link> {/* Added Dashboard link */}
             <span className="w-8 h-8 flex items-center justify-center rounded-full bg-blue-500 text-white font-bold">
               {user.name ? user.name.charAt(0).toUpperCase() : "U"}
             </span>
-            <button 
-              onClick={logout} 
+            <button
+              onClick={logout}
               className="bg-red-500 text-white px-3 py-1 rounded"
             >
               Logout

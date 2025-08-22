@@ -14,7 +14,7 @@ import { connectDB } from "./config/db.js";
 import { env } from "./config/env.js";
 import commentRoutes from "./routes/commentRoutes.js";  
 import Visitor from './models/Visitor.js';
-
+import userRoutes from "./routes/userRoutes.js";
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
@@ -23,6 +23,7 @@ const io = new Server(server, {
     credentials: true,
   },
 });
+app.use("/api/users", userRoutes);
 
 // attach io so controllers can use req.io
 app.use((req, res, next) => {
