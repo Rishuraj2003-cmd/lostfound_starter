@@ -10,5 +10,6 @@ export const signAccess = (user) =>
       name: user.name,
      },
     env.JWT_SECRET,
-    { subject: String(user._id), expiresIn: env.JWT_EXPIRE }
+    { 
+       expiresIn: env.JWT_EXPIRE }
   );
