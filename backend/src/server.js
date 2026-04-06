@@ -29,13 +29,14 @@ const allowedOrigins = [
 
 app.use(
   cors({
-    origin: function (origin, callback) {
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error("CORS not allowed"));
-      }
-    },
+    // origin: function (origin, callback) {
+    //   if (!origin || allowedOrigins.includes(origin)) {
+    //     callback(null, true);
+    //   } else {
+    //     callback(new Error("CORS not allowed"));
+    //   }
+    // },
+    origin:true,
     credentials: true,
   })
 );
@@ -47,7 +48,7 @@ app.use(
 const io = new Server(server, {
   cors: {
     origin: allowedOrigins,
-    methods: ["GET", "POST"],
+    // methods: ["GET", "POST"],
     credentials: true,
   },
 });
@@ -87,7 +88,7 @@ app.get("/api/health", (req, res) => {
 // =======================
 // 🔥 VISITOR
 // =======================
-app.get("/visitor", async (req, res) => {
+app.get("/api/visitor", async (req, res) => {
   let visitor = await Visitor.findOne();
   if (!visitor) visitor = { count: 0 };
   res.json({ count: visitor.count });
