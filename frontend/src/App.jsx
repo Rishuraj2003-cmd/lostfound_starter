@@ -7,7 +7,7 @@ import NewReport from "./pages/NewReport.jsx";
 import ReportDetail from "./pages/ReportDetail.jsx";
 import SignIn from "./pages/SignIn.jsx";
 import SignUp from "./pages/SignUp.jsx";
-import OtpVerify from "./pages/OtpVerify.jsx"; 
+import OtpVerify from "./pages/OtpVerify.jsx";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
 import AuthCallback from "./pages/AuthCallback.jsx";
 import ForgotPassword from "./pages/ForgotPassword";
@@ -15,7 +15,9 @@ import ResetPassword from "./pages/ResetPassword";
 import Dashboard from "./pages/Dashboard.jsx";
 import Footer from "./components/Footer.jsx";
 import { AnimatePresence, motion } from "framer-motion";
-
+import MyReports from "./pages/MyReports";
+import ChatRoom from "./pages/ChatRoom.jsx";
+import ChatList from "./pages/ChatList.jsx";
 export default function App() {
   const location = useLocation();
 
@@ -89,6 +91,44 @@ export default function App() {
               <ProtectedRoute>
                 <motion.div {...pageTransition}>
                   <Dashboard />
+                </motion.div>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/my-reports"
+            element={
+              <ProtectedRoute>
+                <motion.div {...pageTransition}>
+                  <MyReports />
+                </motion.div>
+              </ProtectedRoute>
+            }
+          />
+          {/* <Route
+            path="/chat/:id"
+            element={
+              <ProtectedRoute>
+                <motion.div {...pageTransition}>
+                  <ChatRoom />
+                </motion.div>
+              </ProtectedRoute>
+            }
+          /> */}
+          <Route
+            path="/chat/:id"
+            element={
+              <ProtectedRoute>
+                <ChatRoom />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/chat"
+            element={
+              <ProtectedRoute>
+                <motion.div {...pageTransition}>
+                  <ChatList />
                 </motion.div>
               </ProtectedRoute>
             }

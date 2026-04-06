@@ -44,6 +44,7 @@ export default function Reports() {
           <option value="all">All</option>
           <option value="lost">Lost</option>
           <option value="found">Found</option>
+          <option value="claimed">Claimed</option>
         </select>
         <input
           type="text"

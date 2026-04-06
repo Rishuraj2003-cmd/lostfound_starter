@@ -1,113 +1,159 @@
-// pages/ReportDetail.jsx
-import { useParams } from "react-router-dom";
+// 📁 pages/ReportDetail.jsx
+
+import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { api } from "../api/client";
-import { io } from "socket.io-client";
 
 export default function ReportDetail() {
   const { id } = useParams();
+  const navigate = useNavigate();
+
   const [report, setReport] = useState(null);
   const [comments, setComments] = useState([]);
+  const [text, setText] = useState("");
 
-  // Fetch report + comments initially
+  // ✅ FETCH DATA
   useEffect(() => {
-    api.get(`/reports/${id}`).then((r) => setReport(r.data));
-    api.get(`/comments/${id}`).then((r) => setComments(r.data));
+    api.get(`/reports/${id}`).then((res) => setReport(res.data));
+    api.get(`/comments/${id}`).then((res) => setComments(res.data));
   }, [id]);
 
-  // Setup socket connection
-  useEffect(() => {
-    const baseUrl =
-      import.meta.env.VITE_API_URL?.replace("/api", "") ||
-      "http://localhost:5001"; // ✅ fixed to 5001
+  // ✅ ADD COMMENT
+  const addComment = async () => {
+    if (!text.trim()) return;
 
-    const socket = io(baseUrl, {
-      withCredentials: true,
+    const res = await api.post("/comments", {
+      reportId: id,
+      body: text,
     });
 
-    socket.emit("joinReport", id);
-    socket.on("comment:new", (c) => setComments((prev) => [...prev, c]));
+    setComments((prev) => [...prev, res.data]);
+    setText("");
+  };
 
-    return () => socket.disconnect();
-  }, [id]);
+  // ✅ START CHAT
+ const handleChat = async () => {
+  console.log("START");
 
-  // Add new comment
-  async function addComment(e) {
-    e.preventDefault();
-    const body = e.target.body.value;
-    if (!body) return;
+  try {
+    const userId = report.postedBy?._id || report.postedBy;
 
-    // Optimistic update: show immediately
-    const temp = {
-      _id: Date.now(),
-      body,
-      author: { name: "You" },
-      createdAt: new Date().toISOString(),
-    };
-    setComments((prev) => [...prev, temp]);
+    console.log("USER ID:", userId);
 
-    await api.post("/comments", { reportId: id, body });
-    e.target.reset();
+    const res = await api.post("/chat/conversation", {
+      userId,
+      reportId: report._id,
+    });
+
+    console.log("RESPONSE:", res.data);
+
+    navigate(`/chat/${res.data._id}`);
+  } catch (err) {
+    console.log("ERROR:", err);
   }
+};
 
-  if (!report) return <div className="container-page py-8">Loading...</div>;
+  if (!report) return <p className="p-6">Loading...</p>;
 
   return (
-    <div className="container-page py-8">
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Report */}
-        <div className="lg:col-span-2 card p-4">
-          <h1 className="text-2xl font-bold">{report.title}</h1>
-          <div className="text-sm text-gray-500">
-            {report.city} • {report.type}
-          </div>
+    <div className="max-w-7xl mx-auto px-4 py-6 grid lg:grid-cols-3 gap-6">
 
-          {/* Images */}
-          <div className="mt-4 grid grid-cols-2 md:grid-cols-3 gap-3">
-            {report.images?.map((s, i) => {
-              const apiBase =
-                import.meta.env.VITE_API_URL?.replace("/api", "") ||
-                "http://localhost:5001";
-              const imageUrl = s.startsWith("http") ? s : `${apiBase}/${s}`;
+      {/* 🔥 LEFT SIDE */}
+      <div className="lg:col-span-2 space-y-4">
 
-              return (
-                <img
-                  key={i}
-                  src={imageUrl}
-                  alt="Report"
-                  className="w-full h-40 object-cover rounded"
-                />
-              );
-            })}
-          </div>
-
-          <p className="mt-4">{report.description}</p>
+        {/* IMAGE */}
+        <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
+          <img
+            src={report.images?.[0] || "/placeholder.jpg"}
+            alt={report.title}
+            className="w-full h-[400px] object-cover"
+          />
         </div>
 
-        {/* Comments */}
-        <div className="card p-4">
-          <h2 className="font-semibold mb-2">Comments</h2>
-          <div className="space-y-3 max-h-80 overflow-auto">
+        {/* DETAILS */}
+        <div className="bg-white rounded-2xl shadow-sm p-5">
+
+          <h1 className="text-2xl font-bold">{report.title}</h1>
+
+          <p className="text-sm text-gray-500 mt-1">
+            {report.city} • {report.type}
+          </p>
+
+          {/* STATUS */}
+          <div className="flex gap-2 mt-2">
+            <span className="px-3 py-1 text-xs rounded-full bg-indigo-100 text-indigo-600">
+              {report.type}
+            </span>
+            <span className="px-3 py-1 text-xs rounded-full bg-gray-200">
+              {report.status}
+            </span>
+          </div>
+
+          {/* DESCRIPTION */}
+          <p className="mt-4 text-gray-700">{report.description}</p>
+
+          {/* DATE */}
+          <p className="text-xs text-gray-400 mt-4">
+            {new Date(report.createdAt).toLocaleDateString("en-IN")}
+          </p>
+
+        </div>
+      </div>
+
+      {/* 🔥 RIGHT SIDE */}
+      <div className="space-y-4">
+
+        {/* OWNER CARD */}
+        <div className="bg-white rounded-2xl p-4 shadow-sm border">
+
+          <p className="text-sm text-gray-500">Posted by</p>
+
+          <p className="font-semibold text-lg">
+            {report.postedBy?.name}
+          </p>
+
+          <button
+            onClick={handleChat}
+            className="mt-3 w-full bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 transition"
+          >
+            💬 Message Owner
+          </button>
+
+        </div>
+
+        {/* COMMENTS */}
+        <div className="bg-white rounded-2xl p-4 shadow-sm border">
+
+          <h3 className="font-semibold mb-3">Comments</h3>
+
+          {/* COMMENT LIST */}
+          <div className="space-y-2 max-h-64 overflow-y-auto">
             {comments.map((c) => (
-              <div key={c._id} className="border rounded p-2 text-sm">
-                <div className="flex justify-between text-xs text-gray-500">
-                  <span className="font-semibold">
-                    {c.author?.name || "Anonymous"}
-                  </span>
-                  <span>{new Date(c.createdAt).toLocaleString()}</span>
-                </div>
-                <div>{c.body}</div>
+              <div key={c._id} className="bg-gray-100 p-2 rounded-lg text-sm">
+                <p className="font-medium text-gray-700">
+                  {c.author?.name || "User"}
+                </p>
+                <p className="text-gray-600">{c.body}</p>
               </div>
             ))}
           </div>
-          <form onSubmit={addComment} className="mt-3 flex gap-2">
+
+          {/* INPUT */}
+          <div className="flex gap-2 mt-3">
             <input
-              name="body"
-              className="input flex-1"
-              placeholder="Add a comment/update"
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+              placeholder="Write a comment..."
+              className="flex-1 border rounded-lg px-3 py-2 text-sm"
             />
-            <button className="btn btn-primary">Send</button>
-          </form>
+            <button
+              onClick={addComment}
+              className="bg-indigo-600 text-white px-4 rounded-lg"
+            >
+              Send
+            </button>
+          </div>
+
         </div>
       </div>
     </div>
