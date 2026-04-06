@@ -11,20 +11,29 @@ import commentRoutes from "./routes/commentRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import chatRoutes from "./routes/chatRoutes.js";
 import Visitor from "./models/Visitor.js";
-
+import cors from "cors";
 export let ioInstance;
 
 // ✅ CREATE SERVER
 const server = http.createServer(app);
 
+app.use(
+  cors({
+    origin: "https://lostfound-kappa.vercel.app",
+    credentials:true,
+  })
+)
+
 // ✅ SOCKET INIT
-const io = new Server(server, {
-  cors: {
-    origin: env.CLIENT_URL,
-    methods: ["GET", "POST"],
-    credentials: true,
-  },
-});
+// const io = new Server(server, {
+//   cors: {
+//     origin: env.CLIENT_URL,
+//     methods: ["GET", "POST"],
+//     credentials: true,
+//   },
+// });
+
+
 
 ioInstance = io;
 
