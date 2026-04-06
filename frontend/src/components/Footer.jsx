@@ -15,7 +15,7 @@ export default function Footer() {
   const [totalVisitors, setTotalVisitors] = useState(0);
 
   useEffect(() => {
-    fetch(`${import.meta.env.VITE_API_URL || "http://localhost:5001"}/api/visitor`)
+    fetch(`${import.meta.env.VITE_API_URL || "http://localhost:5001"}/visitor`)
       .then((res) => res.json())
       .then((data) => setTotalVisitors(data.count))
       .catch(console.error);

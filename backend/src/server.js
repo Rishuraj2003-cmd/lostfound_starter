@@ -12,53 +12,82 @@ import userRoutes from "./routes/userRoutes.js";
 import chatRoutes from "./routes/chatRoutes.js";
 import Visitor from "./models/Visitor.js";
 import cors from "cors";
+
 export let ioInstance;
 
 // ✅ CREATE SERVER
 const server = http.createServer(app);
 
+
+// =======================
+// 🔥 CORS FIX (IMPORTANT)
+// =======================
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://lostfound-kappa.vercel.app",
+];
+
 app.use(
   cors({
-    origin: "https://lostfound-kappa.vercel.app",
-    credentials:true,
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("CORS not allowed"));
+      }
+    },
+    credentials: true,
   })
-)
-
-// ✅ SOCKET INIT
-// const io = new Server(server, {
-//   cors: {
-//     origin: env.CLIENT_URL,
-//     methods: ["GET", "POST"],
-//     credentials: true,
-//   },
-// });
+);
 
 
+// =======================
+// 🔥 SOCKET INIT (FIXED)
+// =======================
+const io = new Server(server, {
+  cors: {
+    origin: allowedOrigins,
+    methods: ["GET", "POST"],
+    credentials: true,
+  },
+});
 
 ioInstance = io;
 
-// ✅ ONLINE USERS
+
+// =======================
+// 🔥 ONLINE USERS
+// =======================
 const onlineUsers = new Map();
 
-// ✅ ROUTES
+
+// =======================
+// 🔥 ROUTES (WITH /api)
+// =======================
 app.use("/api/users", userRoutes);
 app.use("/api/comments", commentRoutes);
+app.use("/api/chat", chatRoutes);
 
-// ✅ PASS SOCKET
+
+// ✅ PASS SOCKET TO ROUTES
 app.use((req, res, next) => {
   req.io = io;
   next();
 });
 
-app.use("/api/chat", chatRoutes);
 
-// ✅ HEALTH
+// =======================
+// 🔥 HEALTH
+// =======================
 app.get("/api/health", (req, res) => {
   res.json({ status: "OK" });
 });
 
-// ✅ VISITOR
-app.get("/api/visitor", async (req, res) => {
+
+// =======================
+// 🔥 VISITOR
+// =======================
+app.get("/visitor", async (req, res) => {
   let visitor = await Visitor.findOne();
   if (!visitor) visitor = { count: 0 };
   res.json({ count: visitor.count });
@@ -66,9 +95,8 @@ app.get("/api/visitor", async (req, res) => {
 
 
 // =======================
-// 🔥 SOCKET LOGIC (FIXED)
+// 🔥 SOCKET LOGIC
 // =======================
-
 io.on("connection", (socket) => {
   console.log("🟢 Connected:", socket.id);
 
@@ -76,7 +104,6 @@ io.on("connection", (socket) => {
   socket.on("joinUser", (userId) => {
     onlineUsers.set(userId, socket.id);
     socket.join(userId);
-
     io.emit("onlineUsers", Array.from(onlineUsers.keys()));
   });
 
@@ -97,8 +124,6 @@ io.on("connection", (socket) => {
 
   // SEND MESSAGE
   socket.on("sendMessage", (msg) => {
-    console.log("📩", msg);
-
     io.to(msg.conversationId).emit("receiveMessage", msg);
 
     if (msg.receiverId) {
@@ -125,10 +150,10 @@ io.on("connection", (socket) => {
 // =======================
 // 🚀 START SERVER
 // =======================
-
 const port = env.PORT;
+
 await connectDB();
 
 server.listen(port, () => {
-  console.log(`🚀 Running on http://localhost:${port}`);
+  console.log(`🚀 Running on port ${port}`);
 });
