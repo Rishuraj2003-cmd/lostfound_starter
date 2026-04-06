@@ -8,10 +8,12 @@ const ReportSchema = new mongoose.Schema({
   geo: { type: { type: String, enum: ['Point'], default: 'Point' }, coordinates: { type: [Number], required: true } },
   address: String,
   city: String,
-  status: { type: String, enum: ['OPEN','RESOLVED','HIDDEN'], default: 'OPEN' },
+  status: { type: String, enum: ['OPEN', 'CLAIMED', 'RESOLVED','HIDDEN'], default: 'OPEN' },
   postedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-  contact: { email: String, phone: String }
-}, { timestamps: true });
+  contact: { email: String, phone: String },
+  claimedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
+}, 
+{ timestamps: true });
 ReportSchema.index({ title: 'text', description: 'text' });
 ReportSchema.index({ geo: '2dsphere' });
 export default mongoose.model('Report', ReportSchema);

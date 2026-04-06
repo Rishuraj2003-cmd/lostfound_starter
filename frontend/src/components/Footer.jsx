@@ -1,80 +1,87 @@
 import React, { useEffect, useState } from "react";
 import { io } from "socket.io-client";
-import { Github, Linkedin } from "lucide-react";
-import { motion } from "framer-motion";
+import {
+  Github,
+  Linkedin,
+  Mail,
+  Phone,
+  MapPin,
+  Search,
+} from "lucide-react";
 
 const socket = io(import.meta.env.VITE_API_URL || "http://localhost:5001");
 
-const Footer = () => {
+export default function Footer() {
   const [totalVisitors, setTotalVisitors] = useState(0);
 
-  // Fetch initial total visitors
   useEffect(() => {
     fetch(`${import.meta.env.VITE_API_URL || "http://localhost:5001"}/api/visitor`)
-      .then(res => res.json())
-      .then(data => setTotalVisitors(data.count))
+      .then((res) => res.json())
+      .then((data) => setTotalVisitors(data.count))
       .catch(console.error);
   }, []);
 
-  // Update live total count
   useEffect(() => {
-    socket.on("visitorCount", count => setTotalVisitors(count));
+    socket.on("visitorCount", setTotalVisitors);
     return () => socket.off("visitorCount");
   }, []);
 
   return (
-    <motion.footer
-      initial={{ opacity: 0, y: 40 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6, ease: "easeOut" }}
-      className="bg-blue-50 py-4 fixed bottom-0 w-full shadow-[0_-2px_6px_rgba(0,0,0,0.05)] 
-                 border-t border-transparent bg-gradient-to-t from-blue-100 via-blue-50 to-white"
-    >
-      <div className="container mx-auto flex flex-col md:flex-row justify-between items-center text-gray-700 text-sm gap-3">
-        
-        {/* Visitors */}
-        <p>🌍 Total Visits: <span className="font-semibold">{totalVisitors}</span></p>
+    <footer className="bg-[#0B1220] text-gray-300 mt-16">
+      <div className="max-w-7xl mx-auto px-5 py-12 grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
 
-        {/* Middle Section (two lines stacked) */}
-        <div className="text-center">
-          <p>
-            © {new Date().getFullYear()} Lost & Found | Built by{" "}
-            <a
-              href="https://github.com/Rishuraj2003-cmd"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="font-semibold hover:text-indigo-600 transition"
-            >
-              Rishu Raj
-            </a>
+        {/* BRAND */}
+        <div>
+          <div className="flex items-center gap-2 mb-4">
+            <div className="bg-indigo-600 p-2 rounded-lg">
+              <Search className="text-white size-5" />
+            </div>
+            <h2 className="text-white font-semibold">Lost & Found</h2>
+          </div>
+
+          <p className="text-sm text-gray-400 mb-4">
+            Community-driven platform to find lost items easily.
           </p>
-          <p className="text-gray-600">
-            Made with <span className="animate-pulse text-red-500">❤️</span> in India
+
+          <p className="text-sm">
+            🌍 Visits: <span className="text-indigo-400">{totalVisitors}</span>
           </p>
         </div>
 
-        {/* Social Icons */}
-        <div className="flex gap-4">
-          <a
-            href="https://github.com/Rishuraj2003-cmd"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="transition hover:text-indigo-600 hover:drop-shadow-[0_0_8px_rgba(99,102,241,0.7)]"
-          >
-            <Github size={22} />
-          </a>
-          <a
-            href="https://www.linkedin.com/in/rishu-raj-86309b223/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="transition hover:text-indigo-600 hover:drop-shadow-[0_0_8px_rgba(99,102,241,0.7)]"
-          >
-            <Linkedin size={22} />
-          </a>
+        {/* LINKS */}
+        <div>
+          <h3 className="text-white mb-3 text-sm font-semibold">Quick Links</h3>
+          <ul className="space-y-2 text-sm">
+            <li><a href="/">All Reports</a></li>
+            <li><a href="/my-reports">My Reports</a></li>
+            <li><a href="/reports/new">Post Report</a></li>
+          </ul>
+        </div>
+
+        {/* SUPPORT */}
+        <div>
+          <h3 className="text-white mb-3 text-sm font-semibold">Support</h3>
+          <ul className="space-y-2 text-sm">
+            <li>About</li>
+            <li>Contact</li>
+            <li>Privacy</li>
+          </ul>
+        </div>
+
+        {/* CONTACT */}
+        <div>
+          <h3 className="text-white mb-3 text-sm font-semibold">Contact</h3>
+          <div className="space-y-2 text-sm">
+            <p className="flex gap-2"><Mail size={14}/> lostandfound.portal@gmail.com</p>
+            <p className="flex gap-2"><Phone size={14}/> +91 00000 00000</p>
+            <p className="flex gap-2"><MapPin size={14}/> India</p>
+          </div>
         </div>
       </div>
-    </motion.footer>
-  );
-};
 
-export default Footer;
+      <div className="border-t border-gray-800 text-center py-4 text-xs text-gray-500">
+        © {new Date().getFullYear()} Lost & Found • Built with ❤️ in India
+      </div>
+    </footer>
+  );
+}

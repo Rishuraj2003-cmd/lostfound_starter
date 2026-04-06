@@ -20,7 +20,7 @@ r.get("/google/callback",
   (req, res) => {
     const token = signAccess(req.user);
     const userData = encodeURIComponent(JSON.stringify({
-      id: req.user._id,
+      id: req.user.id,
       name: req.user.name,
       email: req.user.email,
       role: req.user.role,
