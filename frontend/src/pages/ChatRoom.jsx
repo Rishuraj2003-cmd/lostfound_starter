@@ -18,20 +18,15 @@ export default function ChatRoom() {
   const userId = localStorage.getItem("userId");
   const userName = localStorage.getItem("name") || "U";
 
+  // ✅ SOCKET URL (FINAL FIX)
+  const SOCKET_URL =
+    import.meta.env.VITE_SOCKET_URL || "http://localhost:5001";
+
   // 🔥 SOCKET + FETCH
   useEffect(() => {
-    // 🟡 LOCAL (for development)
-    // socketRef.current = io("http://localhost:5001", {
-    //   transports: ["websocket"],
-    // });
-
-    // 🟢 PRODUCTION (Render)
-    socketRef.current = io(
-      import.meta.env.VITE_API_URL.replace("/api", ""),
-      {
-        transports: ["websocket"],
-      }
-    );
+    socketRef.current = io(SOCKET_URL, {
+      transports: ["websocket"],
+    });
 
     socketRef.current.emit("joinUser", userId);
     socketRef.current.emit("joinChat", id);
@@ -147,7 +142,7 @@ export default function ChatRoom() {
         </div>
       </div>
 
-      {/* CHAT AREA */}
+      {/* CHAT */}
       <div className="flex-1 overflow-y-auto px-3 py-4 space-y-3">
 
         {messages.map((m) => {
@@ -160,7 +155,6 @@ export default function ChatRoom() {
               className={`flex ${isMe ? "justify-end" : "justify-start"}`}
             >
 
-              {/* RECEIVER */}
               {!isMe && (
                 <div className="flex items-end gap-2 max-w-[85%]">
                   <div className="w-9 h-9 rounded-full bg-gray-400 text-white flex items-center justify-center text-xs">
@@ -168,7 +162,7 @@ export default function ChatRoom() {
                   </div>
 
                   <div className="bg-white px-3 py-2 rounded-2xl rounded-bl-sm shadow-sm max-w-[75%]">
-                    <p className="text-sm break-all whitespace-pre-wrap text-gray-800">
+                    <p className="text-sm whitespace-pre-wrap text-gray-800">
                       {m.text}
                     </p>
                     <span className="text-[10px] text-gray-400">
@@ -178,7 +172,6 @@ export default function ChatRoom() {
                 </div>
               )}
 
-              {/* SENDER */}
               {isMe && (
                 <div className="flex items-end gap-2 max-w-[85%]">
                   <div className="bg-indigo-600 text-white px-3 py-2 rounded-2xl rounded-br-sm shadow-sm max-w-[75%]">
@@ -207,7 +200,6 @@ export default function ChatRoom() {
           );
         })}
 
-        {/* TYPING */}
         {typingUser && (
           <p className="text-xs text-gray-400 ml-2">
             {typingUser} typing...
@@ -223,7 +215,7 @@ export default function ChatRoom() {
           value={text}
           onChange={handleTyping}
           placeholder="Type a message..."
-          className="flex-1 bg-gray-100 px-4 py-2 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+          className="flex-1 bg-gray-100 px-4 py-2 rounded-full text-sm focus:outline-none"
         />
 
         <button
