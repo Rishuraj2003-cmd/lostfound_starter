@@ -19,10 +19,25 @@ export default function ChatRoom() {
   const userName = localStorage.getItem("name") || "U";
 
   // 🔥 SOCKET + FETCH
+  // useEffect(() => {
+  //   socketRef.current = io("http://localhost:5001", {
+  //     transports: ["websocket"],
+  //   });
+
   useEffect(() => {
-    socketRef.current = io("http://localhost:5001", {
+  socketRef.current = io(
+    import.meta.env.VITE_API_URL.replace("/api", ""),
+    {
       transports: ["websocket"],
-    });
+    }
+  );
+
+  socketRef.current.emit("joinUser", userId);
+  socketRef.current.emit("joinChat", id);
+
+  return () => socketRef.current.disconnect();
+}, [id]);
+
 
     socketRef.current.emit("joinUser", userId);
     socketRef.current.emit("joinChat", id);
