@@ -19,25 +19,19 @@ export default function ChatRoom() {
   const userName = localStorage.getItem("name") || "U";
 
   // 🔥 SOCKET + FETCH
-  // useEffect(() => {
-  //   socketRef.current = io("http://localhost:5001", {
-  //     transports: ["websocket"],
-  //   });
-
   useEffect(() => {
-  socketRef.current = io(
-    import.meta.env.VITE_API_URL.replace("/api", ""),
-    {
-      transports: ["websocket"],
-    }
-  );
+    // 🟡 LOCAL (for development)
+    // socketRef.current = io("http://localhost:5001", {
+    //   transports: ["websocket"],
+    // });
 
-  socketRef.current.emit("joinUser", userId);
-  socketRef.current.emit("joinChat", id);
-
-  return () => socketRef.current.disconnect();
-}, [id]);
-
+    // 🟢 PRODUCTION (Render)
+    socketRef.current = io(
+      import.meta.env.VITE_API_URL.replace("/api", ""),
+      {
+        transports: ["websocket"],
+      }
+    );
 
     socketRef.current.emit("joinUser", userId);
     socketRef.current.emit("joinChat", id);
@@ -59,10 +53,8 @@ export default function ChatRoom() {
     socketRef.current.on("typing", setTypingUser);
     socketRef.current.on("stopTyping", () => setTypingUser(""));
 
-    // ✅ SEEN (BLUE TICK FIXED)
+    // ✅ SEEN
     socketRef.current.on("messageSeen", ({ messageIds }) => {
-      // console.log("SEEN IDS:", messageIds);
-
       setMessages((prev) =>
         prev.map((m) =>
           messageIds.includes(m._id?.toString())
@@ -75,8 +67,6 @@ export default function ChatRoom() {
     // ✅ FETCH MESSAGES
     api.get(`/chat/messages/${id}`).then((res) => {
       setMessages(res.data);
-
-      // console.log("CALLING SEEN API");
       api.put(`/chat/seen/${id}`);
     });
 
@@ -108,7 +98,7 @@ export default function ChatRoom() {
     }
   };
 
-  // 🔥 TYPING FIX
+  // 🔥 TYPING
   const handleTyping = (e) => {
     setText(e.target.value);
 
@@ -173,15 +163,14 @@ export default function ChatRoom() {
               {/* RECEIVER */}
               {!isMe && (
                 <div className="flex items-end gap-2 max-w-[85%]">
-                  <div className="w-9 h-9 min-w-[36px] rounded-full bg-gray-400 text-white flex items-center justify-center text-xs">
+                  <div className="w-9 h-9 rounded-full bg-gray-400 text-white flex items-center justify-center text-xs">
                     {getInitial(m.senderName)}
                   </div>
 
                   <div className="bg-white px-3 py-2 rounded-2xl rounded-bl-sm shadow-sm max-w-[75%]">
-                    <p className="text-sm break-all whitespace-pre-wrap leading-relaxed text-gray-800">
+                    <p className="text-sm break-all whitespace-pre-wrap text-gray-800">
                       {m.text}
                     </p>
-
                     <span className="text-[10px] text-gray-400">
                       {formatTime(m.createdAt)}
                     </span>
@@ -193,14 +182,13 @@ export default function ChatRoom() {
               {isMe && (
                 <div className="flex items-end gap-2 max-w-[85%]">
                   <div className="bg-indigo-600 text-white px-3 py-2 rounded-2xl rounded-br-sm shadow-sm max-w-[75%]">
-                    <p className="text-sm break-all whitespace-pre-wrap leading-relaxed">
+                    <p className="text-sm whitespace-pre-wrap">
                       {m.text}
                     </p>
 
                     <div className="text-[10px] flex justify-end gap-1 text-indigo-200">
                       {formatTime(m.createdAt)}
 
-                      {/* 🔥 BLUE TICK FINAL */}
                       {m.sender === userId &&
                         (m.seen ? (
                           <span className="text-blue-400">✔✔</span>
@@ -210,7 +198,7 @@ export default function ChatRoom() {
                     </div>
                   </div>
 
-                  <div className="w-9 h-9 min-w-[36px] rounded-full bg-indigo-500 text-white flex items-center justify-center text-xs">
+                  <div className="w-9 h-9 rounded-full bg-indigo-500 text-white flex items-center justify-center text-xs">
                     {getInitial(userName)}
                   </div>
                 </div>
@@ -230,7 +218,7 @@ export default function ChatRoom() {
       </div>
 
       {/* INPUT */}
-      <div className="p-3 border-t bg-white sticky bottom-0 flex gap-2">
+      <div className="p-3 border-t bg-white flex gap-2">
         <input
           value={text}
           onChange={handleTyping}
