@@ -36,7 +36,7 @@ app.use(
     //     callback(new Error("CORS not allowed"));
     //   }
     // },
-    origin:true,
+    origin:allowedOrigins,
     credentials: true,
   })
 );
