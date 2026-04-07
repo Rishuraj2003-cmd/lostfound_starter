@@ -1,14 +1,23 @@
-// src/controllers/reportController.js
-
-import Report from '../models/Report.js';
-import { createReportService } from "../services/reportService.js";
-import { getReportService } from "../services/reportService.js";
+import Report from "../models/Report.js";
+import {
+  createReportService,
+  getReportService,
+  claimReportService,
+} from "../services/reportService.js";
 import { createReportSchema } from "../validators/reportValidator.js";
-import { claimReportService } from "../services/reportService.js";
 
+// =======================
+// ✅ CREATE REPORT
+// =======================
 export async function createReport(req, res) {
+  console.log("🔥 API HIT HO RAHI HAI");
+
   try {
-    // ✅ STEP 1: Validate request
+   console.log("BODY:", JSON.stringify(req.body, null, 2));
+console.log("USER:", JSON.stringify(req.user, null, 2));
+console.log("FILES:", req.files);
+
+
     const { error } = createReportSchema.validate(req.body);
 
     if (error) {
@@ -17,7 +26,6 @@ export async function createReport(req, res) {
       });
     }
 
-    // ✅ STEP 2: Extract data
     const { type, title, description, category, lng, lat, address, city, contact } = req.body;
 
     const images = (req.files || []).map(f => f.path);
@@ -28,27 +36,39 @@ export async function createReport(req, res) {
       description,
       category,
       images,
-      geo: { type: 'Point', coordinates: [Number(lng || 0), Number(lat || 0)] },
+      geo: {
+        type: "Point",
+        coordinates: [Number(lng || 0), Number(lat || 0)]
+      },
       address,
       city,
       contact
     };
 
-    // ✅ STEP 3: Call service
     const { report, matches } = await createReportService(data, req.user, req.io);
 
     res.status(201).json({ report, matches });
 
   } catch (error) {
-    console.error(error);
+    console.error("❌ ERROR:", error);
     res.status(500).json({ message: "Error creating report" });
   }
 }
 
-// ✅ LIST REPORTS (unchanged)
+// =======================
+// ✅ LIST REPORTS
+// =======================
 export async function listReports(req, res) {
   try {
-    const { q, category, type, city, status, page = 1, limit = 12 } = req.query;
+    const {
+      q,
+      category,
+      type,
+      city,
+      status,
+      page = 1,
+      limit = 12,
+    } = req.query;
 
     const filter = {};
 
@@ -58,39 +78,13 @@ export async function listReports(req, res) {
     if (status) filter.status = status.toUpperCase();
     if (q) filter.$text = { $search: q };
 
-    // DATE FILTER
-    if (req.query.date) {
-  const now = new Date();
-  let startDate;
-
-  if (req.query.date === "today") {
-    startDate = new Date();
-    startDate.setHours(0, 0, 0, 0);
-  }
-
-  if (req.query.date === "week") {
-    startDate = new Date();
-    startDate.setDate(now.getDate() - 7);
-  }
-
-  if (req.query.date === "month") {
-    startDate = new Date();
-    startDate.setMonth(now.getMonth() - 1);
-  }
-
-  if (req.query.date === "older") {
-    const oldDate = new Date();
-    oldDate.setMonth(now.getMonth() - 1);
-    filter.createdAt = { $lt: oldDate };
-  } else if (startDate) {
-    filter.createdAt = { $gte: startDate };
-  }
-}
-
     const skip = (Number(page) - 1) * Number(limit);
 
     const [items, total] = await Promise.all([
-      Report.find(filter).sort({ createdAt: -1 }).skip(skip).limit(Number(limit)),
+      Report.find(filter)
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(Number(limit)),
       Report.countDocuments(filter),
     ]);
 
@@ -100,45 +94,56 @@ export async function listReports(req, res) {
       page: Number(page),
       pages: Math.ceil(total / Number(limit)),
     });
-
   } catch (error) {
     res.status(500).json({ message: "Error fetching reports" });
   }
 }
 
-// ✅ GET SINGLE REPORT (unchanged)
+// =======================
+// ✅ GET SINGLE REPORT
+// =======================
 export async function getReport(req, res) {
   try {
     const report = await getReportService(req.params.id);
     res.json(report);
-  } catch (error) {
+  } catch {
     res.status(404).json({ message: "Not found" });
   }
 }
 
+// =======================
+// ✅ CLAIM REPORT
+// =======================
 export async function claimReport(req, res) {
   try {
-    const report = await claimReportService(req.params.id, req.user.id);
+    const report = await claimReportService(
+      req.params.id,
+      req.user._id || req.user.id
+    );
 
     res.json({
       message: "Item claimed successfully",
-      report
+      report,
     });
-
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
 }
 
+// =======================
 // 🔥 UPDATE STATUS
+// =======================
 export async function updateStatus(req, res) {
   try {
     const report = await Report.findById(req.params.id);
 
-    if (!report) return res.status(404).json({ message: "Not found" });
+    if (!report)
+      return res.status(404).json({ message: "Not found" });
 
-    // ✅ OWNER CHECK
-    if (report.postedBy.toString() !== req.user.id) {
+    if (
+      report.postedBy.toString() !==
+      (req.user._id || req.user.id)
+    ) {
       return res.status(403).json({ message: "Not allowed" });
     }
 
@@ -146,49 +151,62 @@ export async function updateStatus(req, res) {
     await report.save();
 
     res.json(report);
-  } catch (err) {
+  } catch {
     res.status(500).json({ message: "Error updating status" });
   }
 }
 
-// 🔥 DELETE
+// =======================
+// 🔥 DELETE REPORT
+// =======================
 export async function deleteReport(req, res) {
   try {
     const report = await Report.findById(req.params.id);
 
-    if (!report) return res.status(404).json({ message: "Not found" });
+    if (!report)
+      return res.status(404).json({ message: "Not found" });
 
-    if (report.postedBy.toString() !== req.user.id) {
+    if (
+      report.postedBy.toString() !==
+      (req.user._id || req.user.id)
+    ) {
       return res.status(403).json({ message: "Not allowed" });
     }
 
     await report.deleteOne();
 
     res.json({ message: "Deleted successfully" });
-  } catch (err) {
+  } catch {
     res.status(500).json({ message: "Error deleting" });
   }
 }
 
+// =======================
+// 🔥 EDIT REPORT
+// =======================
 export async function editReport(req, res) {
   try {
     const report = await Report.findById(req.params.id);
 
-    if (!report) return res.status(404).json({ message: "Not found" });
+    if (!report)
+      return res.status(404).json({ message: "Not found" });
 
-    // OWNER CHECK
-    if (report.postedBy.toString() !== req.user.id) {
+    if (
+      report.postedBy.toString() !==
+      (req.user._id || req.user.id)
+    ) {
       return res.status(403).json({ message: "Not allowed" });
     }
 
-    // UPDATE
     report.title = req.body.title || report.title;
-    report.description = req.body.description || report.description;
+    report.description =
+      req.body.description || report.description;
     report.city = req.body.city || report.city;
 
-    // 🔥 IMAGE UPDATE
     if (req.files && req.files.length > 0) {
-      report.images = req.files.map(f => f.path);
+      report.images = req.files.map(
+        (f) => f.path || f.url
+      );
     }
 
     await report.save();

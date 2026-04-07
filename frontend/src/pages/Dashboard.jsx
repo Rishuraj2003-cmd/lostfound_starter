@@ -151,7 +151,7 @@ export default function Dashboard() {
             ))}
          <div className="flex justify-center mt-10">
   <Link
-    to="/my"
+    to="/my-reports"
     className="text-indigo-600 font-medium hover:underline text-sm"
   >
     View all reports →

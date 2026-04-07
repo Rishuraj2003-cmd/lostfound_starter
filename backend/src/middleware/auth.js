@@ -9,7 +9,12 @@ export function auth(required = true){
     }
     try {
       const payload = jwt.verify(token, env.JWT_SECRET);
-      req.user = { id: payload.sub, role: payload.role , name: payload.name};
+      req.user = { 
+        _id: payload.sub,
+        id: payload.sub,
+         role: payload.role , 
+         name: payload.name
+        };
       next();
     } catch (err){
       if(required) return res.status(401).json({ message: 'Invalid token' });

@@ -172,7 +172,18 @@ export default function NewReport() {
                 type="file"
                 multiple
                 accept="image/*"
-                onChange={(e) => setFiles(Array.from(e.target.files))}
+                onChange={(e) => {
+  const selected = Array.from(e.target.files);
+
+  const valid = selected.filter(file => file.size < 2 * 1024 * 1024);
+
+  if (valid.length !== selected.length) {
+    alert("Some images are too large (max 2MB)");
+  }
+
+  setFiles(valid);
+}}
+
                 className="hidden"
                 id="upload"
               />

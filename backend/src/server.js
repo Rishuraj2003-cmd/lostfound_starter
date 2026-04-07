@@ -7,6 +7,7 @@ import app from "./app.js";
 import { connectDB } from "./config/db.js";
 import { env } from "./config/env.js";
 
+import reportRoutes from './routes/reportRoutes.js'; 
 import commentRoutes from "./routes/commentRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import chatRoutes from "./routes/chatRoutes.js";
@@ -67,7 +68,12 @@ const onlineUsers = new Map();
 // =======================
 app.use("/api/users", userRoutes);
 app.use("/api/comments", commentRoutes);
+<<<<<<< Updated upstream
 app.use("/api/chat", chatRoutes);
+=======
+app.use('/api/reports', reportRoutes); 
+
+>>>>>>> Stashed changes
 
 
 // ✅ PASS SOCKET TO ROUTES
