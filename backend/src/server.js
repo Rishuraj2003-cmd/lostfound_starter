@@ -68,12 +68,12 @@ const onlineUsers = new Map();
 // =======================
 app.use("/api/users", userRoutes);
 app.use("/api/comments", commentRoutes);
-<<<<<<< Updated upstream
+
 app.use("/api/chat", chatRoutes);
-=======
+
 app.use('/api/reports', reportRoutes); 
 
->>>>>>> Stashed changes
+
 
 
 // ✅ PASS SOCKET TO ROUTES
