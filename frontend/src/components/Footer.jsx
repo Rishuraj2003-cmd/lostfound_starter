@@ -9,10 +9,10 @@ import {
   Search,
 } from "lucide-react";
 
-const SOCKET_URL =
- import.meta.env.VITE_API_URL.replace("/api", "");
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5001/api";
+const SOCKET_URL = API_URL.replace("/api", "");
 
- const socket = io(SOCKET_URL);
+const socket = io(SOCKET_URL);
 
 export default function Footer() {
   const [totalVisitors, setTotalVisitors] = useState(0);
