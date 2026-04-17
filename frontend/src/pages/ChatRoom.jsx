@@ -19,8 +19,8 @@ export default function ChatRoom() {
   const userName = localStorage.getItem("name") || "U";
 
   // ✅ SOCKET URL (FINAL FIX)
-  const SOCKET_URL =
-    import.meta.env.VITE_SOCKET_URL || "http://localhost:5001";
+  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5001/api";
+  const SOCKET_URL = API_URL.replace("/api", "");
 
   // 🔥 SOCKET + FETCH
   useEffect(() => {

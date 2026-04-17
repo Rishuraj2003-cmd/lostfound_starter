@@ -1,14 +1,22 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { io } from "socket.io-client";
 import { api } from "../api/client";
+
+// Get the base URL (remove /api from the end for socket connection)
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5001/api";
+const SOCKET_URL = API_URL.replace("/api", "");
 
 export default function Chat({ conversationId }) {
   const [messages, setMessages] = useState([]);
   const [text, setText] = useState("");
-
-  const socket = io("http://localhost:5001");
+  
+  // Use a ref to store the socket instance so it doesn't reconnect on every keystroke
+  const socketRef = useRef(null);
 
   useEffect(() => {
+    socketRef.current = io(SOCKET_URL);
+    const socket = socketRef.current;
+
     socket.emit("joinChat", conversationId);
 
     socket.on("receiveMessage", (msg) => {
@@ -23,6 +31,8 @@ export default function Chat({ conversationId }) {
   }, [conversationId]);
 
   async function sendMessage() {
+    if (!text.trim()) return;
+
     const msg = {
       conversationId,
       text,
@@ -30,7 +40,9 @@ export default function Chat({ conversationId }) {
 
     const res = await api.post("/chat/message", msg);
 
-    socket.emit("sendMessage", res.data);
+    if (socketRef.current) {
+      socketRef.current.emit("sendMessage", res.data);
+    }
     setMessages((prev) => [...prev, res.data]);
     setText("");
   }
