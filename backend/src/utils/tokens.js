@@ -11,5 +11,6 @@ export const signAccess = (user) =>
      },
     env.JWT_SECRET,
     { 
-       expiresIn: env.JWT_EXPIRE }
+      expiresIn: env.JWT_EXPIRE 
+    }
   );

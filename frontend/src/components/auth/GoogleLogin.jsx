@@ -6,7 +6,14 @@ export default function GoogleLogin() {
     const handleGoogleLogin = () => {
         // This creates the full, correct URL to your backend's Google auth route.
         // It should not have 'undefined' in it.
-        const googleAuthUrl = 'http://localhost:5001/api/auth/google';
+        // const googleAuthUrl = 'http://localhost:5001/api/auth/google';
+
+    const API_URL = import.meta.env.VITE_API_URL;
+
+const googleAuthUrl = API_URL
+  ? API_URL + "/auth/google"
+  : "http://localhost:5001/api/auth/google";
+
         
         // This command tells the browser to go to that URL.
         window.location.href = googleAuthUrl;

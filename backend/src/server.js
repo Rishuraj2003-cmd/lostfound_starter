@@ -51,13 +51,14 @@ app.get("/api/health", (req, res) => {
 // ✅ VISITOR
 app.get("/api/visitor", async (req, res) => {
   let visitor = await Visitor.findOne();
-  if (!visitor) visitor = { count: 0 };
+  if (!visitor) {
+    visitor = { count: 0 };
+  }
   res.json({ count: visitor.count });
 });
 
-
 // =======================
-// 🔥 SOCKET LOGIC (FIXED)
+// 🔥 SOCKET LOGIC
 // =======================
 
 io.on("connection", (socket) => {
@@ -112,12 +113,12 @@ io.on("connection", (socket) => {
   });
 });
 
-
 // =======================
 // 🚀 START SERVER
 // =======================
 
 const port = env.PORT;
+
 await connectDB();
 
 server.listen(port, () => {

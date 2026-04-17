@@ -8,7 +8,7 @@ export const createReportService = async (data, user, io) => {
     // Create report
     const report = await createReportRepo({
       ...data,
-      postedBy: user?.id
+      postedBy: user?.id || user?.id
     });
 
     // Find matches safely

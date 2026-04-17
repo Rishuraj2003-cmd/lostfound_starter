@@ -9,13 +9,16 @@ import {
   Search,
 } from "lucide-react";
 
-const socket = io(import.meta.env.VITE_API_URL || "http://localhost:5001");
+const SOCKET_URL =
+ import.meta.env.VITE_API_URL.replace("/api", "");
+
+ const socket = io(SOCKET_URL);
 
 export default function Footer() {
   const [totalVisitors, setTotalVisitors] = useState(0);
 
   useEffect(() => {
-    fetch(`${import.meta.env.VITE_API_URL || "http://localhost:5001"}/api/visitor`)
+    fetch(`${import.meta.env.VITE_API_URL}/visitor`)
       .then((res) => res.json())
       .then((data) => setTotalVisitors(data.count))
       .catch(console.error);
