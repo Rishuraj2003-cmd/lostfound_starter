@@ -18,8 +18,34 @@ import { AnimatePresence, motion } from "framer-motion";
 import MyReports from "./pages/MyReports";
 import ChatRoom from "./pages/ChatRoom.jsx";
 import ChatList from "./pages/ChatList.jsx";
+import Chat from "./pages/Chat.jsx";
+import About from "./pages/About.jsx";
+import Contact from "./pages/Contact.jsx";
+import { connectSocket, disconnectSocket, socket } from "./socket.js";
+import { useEffect, useState } from "react";
+
 export default function App() {
   const location = useLocation();
+  const [onlineUsers, setOnlineUsers] = useState([]);
+
+  useEffect(() => {
+    const userId = localStorage.getItem("userId");
+    if (userId) {
+      connectSocket(userId);
+    } else {
+      disconnectSocket();
+    }
+
+    // Global listener for online users
+    const handleOnlineUsers = (users) => {
+      setOnlineUsers(users);
+    };
+    socket.on("onlineUsers", handleOnlineUsers);
+
+    return () => {
+      socket.off("onlineUsers", handleOnlineUsers);
+    };
+  }, [location.pathname]);
 
   const pageTransition = {
     initial: { opacity: 0, y: 10 },
@@ -40,6 +66,8 @@ export default function App() {
           <Route path="/otp-verify" element={<OtpVerify />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password/:token" element={<ResetPassword />} />
+          <Route path="/about" element={<motion.div {...pageTransition}><About /></motion.div>} />
+          <Route path="/contact" element={<motion.div {...pageTransition}><Contact /></motion.div>} />
 
           {/* Google OAuth Callback Route */}
           <Route path="/auth/callback" element={<AuthCallback />} />
@@ -105,30 +133,22 @@ export default function App() {
               </ProtectedRoute>
             }
           />
-          {/* <Route
-            path="/chat/:id"
-            element={
-              <ProtectedRoute>
-                <motion.div {...pageTransition}>
-                  <ChatRoom />
-                </motion.div>
-              </ProtectedRoute>
-            }
-          /> */}
-          <Route
-            path="/chat/:id"
-            element={
-              <ProtectedRoute>
-                <ChatRoom />
-              </ProtectedRoute>
-            }
-          />
           <Route
             path="/chat"
             element={
               <ProtectedRoute>
                 <motion.div {...pageTransition}>
-                  <ChatList />
+                  <Chat globalOnlineUsers={onlineUsers} />
+                </motion.div>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/chat/:id"
+            element={
+              <ProtectedRoute>
+                <motion.div {...pageTransition}>
+                  <Chat globalOnlineUsers={onlineUsers} />
                 </motion.div>
               </ProtectedRoute>
             }
@@ -136,7 +156,8 @@ export default function App() {
         </Routes>
       </AnimatePresence>
 
-      <Footer />
+      {/* Hide Footer on chat pages for a true full-screen messenger experience */}
+      {!location.pathname.startsWith('/chat') && <Footer />}
     </>
   );
 }

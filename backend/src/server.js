@@ -114,6 +114,18 @@ io.on("connection", (socket) => {
 });
 
 // =======================
+// 🔥 GLOBAL ERROR HANDLER
+// =======================
+app.use((err, req, res, next) => {
+  console.error("🔥 GLOBAL ERROR HANDLER CAUGHT AN ERROR:", err);
+  res.status(500).json({
+    message: "Internal Server Error",
+    error: err.message,
+    stack: err.stack,
+  });
+});
+
+// =======================
 // 🚀 START SERVER
 // =======================
 

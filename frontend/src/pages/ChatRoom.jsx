@@ -2,41 +2,30 @@ import { useEffect, useState, useRef } from "react";
 import { useParams } from "react-router-dom";
 import { api } from "../api/client";
 import { io } from "socket.io-client";
+import { Send, ArrowLeft } from "lucide-react";
+import { Link } from "react-router-dom";
 
-export default function ChatRoom() {
-  const { id } = useParams();
+export default function ChatRoom({ chatId, otherUser, socket, onlineUsers }) {
+  const id = chatId; // use prop instead of param
 
   const [messages, setMessages] = useState([]);
   const [text, setText] = useState("");
   const [typingUser, setTypingUser] = useState("");
-  const [onlineUsers, setOnlineUsers] = useState([]);
-
-  const socketRef = useRef(null);
-  const bottomRef = useRef(null);
+  const chatContainerRef = useRef(null);
   const typingTimeoutRef = useRef(null);
 
   const userId = localStorage.getItem("userId");
   const userName = localStorage.getItem("name") || "U";
 
-  // ✅ SOCKET URL (FINAL FIX)
-  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5001/api";
-  const SOCKET_URL = API_URL.replace("/api", "");
-
   // 🔥 SOCKET + FETCH
   useEffect(() => {
-    socketRef.current = io(SOCKET_URL, {
-      transports: ["websocket"],
-    });
+    if (!socket) return;
 
-    socketRef.current.emit("joinUser", userId);
-    socketRef.current.emit("joinChat", id);
-
-    // ✅ ONLINE USERS
-    socketRef.current.on("onlineUsers", setOnlineUsers);
+    socket.emit("joinChat", id);
 
     // ✅ RECEIVE MESSAGE
-    socketRef.current.off("receiveMessage");
-    socketRef.current.on("receiveMessage", (msg) => {
+    socket.off("receiveMessage");
+    socket.on("receiveMessage", (msg) => {
       setMessages((prev) => {
         const exists = prev.find((m) => m._id === msg._id);
         if (exists) return prev;
@@ -45,11 +34,15 @@ export default function ChatRoom() {
     });
 
     // ✅ TYPING
-    socketRef.current.on("typing", setTypingUser);
-    socketRef.current.on("stopTyping", () => setTypingUser(""));
+    socket.off("typing");
+    socket.on("typing", setTypingUser);
+    
+    socket.off("stopTyping");
+    socket.on("stopTyping", () => setTypingUser(""));
 
     // ✅ SEEN
-    socketRef.current.on("messageSeen", ({ messageIds }) => {
+    socket.off("messageSeen");
+    socket.on("messageSeen", ({ messageIds }) => {
       setMessages((prev) =>
         prev.map((m) =>
           messageIds.includes(m._id?.toString())
@@ -65,12 +58,20 @@ export default function ChatRoom() {
       api.put(`/chat/seen/${id}`);
     });
 
-    return () => socketRef.current.disconnect();
-  }, [id]);
+    // We don't disconnect the socket here because it belongs to the parent
+    return () => {
+      socket.off("receiveMessage");
+      socket.off("typing");
+      socket.off("stopTyping");
+      socket.off("messageSeen");
+    };
+  }, [id, socket]);
 
-  // 🔥 AUTO SCROLL
+  // 🔥 AUTO SCROLL (Fixed to avoid whole page scrolling)
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+    }
   }, [messages]);
 
   // 🔥 SEND MESSAGE
@@ -85,9 +86,11 @@ export default function ChatRoom() {
 
       setText("");
 
-      socketRef.current.emit("stopTyping", {
-        conversationId: id,
-      });
+      if (socket) {
+        socket.emit("stopTyping", {
+          conversationId: id,
+        });
+      }
     } catch (err) {
       console.error(err);
     }
@@ -97,9 +100,9 @@ export default function ChatRoom() {
   const handleTyping = (e) => {
     setText(e.target.value);
 
-    if (!socketRef.current) return;
+    if (!socket) return;
 
-    socketRef.current.emit("typing", {
+    socket.emit("typing", {
       conversationId: id,
       userName,
     });
@@ -109,7 +112,7 @@ export default function ChatRoom() {
     }
 
     typingTimeoutRef.current = setTimeout(() => {
-      socketRef.current.emit("stopTyping", {
+      socket.emit("stopTyping", {
         conversationId: id,
       });
     }, 1000);
@@ -124,26 +127,34 @@ export default function ChatRoom() {
   const getInitial = (name) =>
     name?.charAt(0).toUpperCase() || "U";
 
-  const isOnline = onlineUsers.includes(userId);
+  // Fix: Check if the OTHER user is online, not the current user!
+  const isOnline = otherUser ? onlineUsers.includes(otherUser._id) : false;
 
   return (
-    <div className="h-screen flex flex-col bg-gray-100 max-w-md mx-auto w-full">
+    <div className="flex-1 flex flex-col bg-gray-50 h-full w-full relative">
 
       {/* HEADER */}
-      <div className="flex items-center gap-3 px-4 py-3 border-b bg-white sticky top-0 z-10">
-        <div className="w-10 h-10 rounded-full bg-indigo-600 text-white flex items-center justify-center font-semibold">
-          {getInitial("Chat")}
+      <div className="flex items-center gap-3 px-4 py-3 border-b bg-white/90 backdrop-blur-md sticky top-0 z-10 shadow-sm shrink-0">
+        <Link to="/chat" className="md:hidden p-2 -ml-2 rounded-full hover:bg-gray-100 text-gray-600 transition">
+          <ArrowLeft size={20} />
+        </Link>
+        <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-indigo-600 to-blue-500 text-white flex items-center justify-center font-bold shadow-md shrink-0">
+          {getInitial(otherUser?.name || "Chat")}
         </div>
-        <div>
-          <p className="font-semibold text-gray-800">Chat</p>
-          <p className="text-xs text-green-500">
-            {isOnline ? "Online" : "Offline"}
+        <div className="flex-1 overflow-hidden">
+          <p className="font-bold text-gray-900 leading-tight truncate">{otherUser?.name || "Chat"}</p>
+          <p className="text-xs font-medium text-green-500 flex items-center gap-1">
+            {isOnline ? (
+              <><span className="w-2 h-2 rounded-full bg-green-500 inline-block"></span> Online</>
+            ) : (
+              <span className="text-gray-400">Offline</span>
+            )}
           </p>
         </div>
       </div>
 
       {/* CHAT */}
-      <div className="flex-1 overflow-y-auto px-3 py-4 space-y-3">
+      <div ref={chatContainerRef} className="flex-1 overflow-y-auto px-3 py-4 space-y-3 scroll-smooth">
 
         {messages.map((m) => {
           const isMe =
@@ -205,24 +216,30 @@ export default function ChatRoom() {
             {typingUser} typing...
           </p>
         )}
-
-        <div ref={bottomRef} />
       </div>
 
       {/* INPUT */}
-      <div className="p-3 border-t bg-white flex gap-2">
-        <input
+      <div className="p-3 border-t bg-white flex gap-2 items-end sticky bottom-0 shrink-0">
+        <textarea
           value={text}
           onChange={handleTyping}
           placeholder="Type a message..."
-          className="flex-1 bg-gray-100 px-4 py-2 rounded-full text-sm focus:outline-none"
+          className="flex-1 bg-gray-50 border border-gray-200 px-4 py-2.5 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none max-h-32 min-h-[44px]"
+          rows="1"
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && !e.shiftKey) {
+              e.preventDefault();
+              sendMessage();
+            }
+          }}
         />
 
         <button
           onClick={sendMessage}
-          className="bg-indigo-600 text-white px-5 py-2 rounded-full"
+          disabled={!text.trim()}
+          className="bg-indigo-600 text-white p-2.5 rounded-full hover:bg-indigo-700 transition disabled:opacity-50 flex items-center justify-center h-11 w-11 shadow-sm"
         >
-          Send
+          <Send size={18} className="ml-1" />
         </button>
       </div>
     </div>

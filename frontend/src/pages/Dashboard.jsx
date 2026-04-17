@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { api } from "../api/client";
 import { Link } from "react-router-dom";
+import { Inbox } from "lucide-react";
 
 export default function Dashboard() {
   const [reports, setReports] = useState([]);
@@ -76,10 +77,19 @@ export default function Dashboard() {
 
       {/* 🔥 REPORTS */}
       <div className="max-w-7xl mx-auto px-4">
-        <h2 className="text-xl font-semibold mb-4">Recent Reports</h2>
+        <h2 className="text-2xl font-bold text-gray-800 mb-6">Recent Reports</h2>
 
         {reports.length === 0 ? (
-          <p className="text-gray-500">No reports yet</p>
+          <div className="bg-white rounded-2xl shadow-sm p-12 flex flex-col items-center justify-center border border-gray-100 text-center">
+            <div className="w-20 h-20 bg-indigo-50 rounded-full flex items-center justify-center text-indigo-500 mb-4">
+              <Inbox size={40} />
+            </div>
+            <h3 className="text-xl font-bold text-gray-800 mb-2">No Reports Yet</h3>
+            <p className="text-gray-500 mb-6 max-w-md">You haven't posted any lost or found items yet. Once you do, you'll be able to track their status here.</p>
+            <Link to="/reports/new" className="bg-indigo-600 text-white px-6 py-2.5 rounded-xl font-medium hover:bg-indigo-700 transition">
+              Create your first report
+            </Link>
+          </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 items-stretch">
             {reports.slice(0, 4).map((r) => (

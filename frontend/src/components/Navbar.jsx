@@ -46,18 +46,18 @@ export default function Navbar() {
               Dashboard
             </Link>
 
-            <Link to="/" className="hover:text-indigo-600 transition">
+            <Link to="/about" className="hover:text-indigo-600 transition">
               About
             </Link>
 
-            <Link to="/" className="hover:text-indigo-600 transition">
+            <Link to="/contact" className="hover:text-indigo-600 transition">
               Contact
             </Link>
             <Link
               to="/chat"
               className="flex items-center gap-1 px-3 py-2 rounded-lg hover:bg-gray-100"
             >
-             <span className="text-sm font-medium">Chat</span>
+              <span className="text-sm font-medium">Chat</span>
             </Link>
 
             <Link
@@ -159,11 +159,11 @@ export default function Navbar() {
                 Post Report
               </Link>
 
-              <Link to="/" onClick={() => setOpen(false)}>
+              <Link to="/about" onClick={() => setOpen(false)}>
                 About
               </Link>
 
-              <Link to="/" onClick={() => setOpen(false)}>
+              <Link to="/contact" onClick={() => setOpen(false)}>
                 Contact
               </Link>
               <Link to="/chat" onClick={() => setOpen(false)}>

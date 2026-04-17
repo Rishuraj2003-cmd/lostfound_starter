@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { api } from "../api/client";
 import { useAuth } from "../context/AuthContext.jsx";
+import { UploadCloud, MapPin, Tag } from "lucide-react";
 
 export default function NewReport() {
   const auth = useAuth();
@@ -47,16 +48,36 @@ export default function NewReport() {
       alert("Report posted!");
       nav("/");
     } catch (err) {
-      alert(err.response?.data?.message || err.message);
+      alert(err.response?.data?.error || err.response?.data?.message || err.message);
     }
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 px-4 py-10 flex justify-center">
+    <div className="min-h-[calc(100vh-64px)] bg-gray-50 flex items-center justify-center p-4 md:p-8">
       
-      <div className="w-full max-w-2xl bg-white border border-gray-200 rounded-2xl shadow-sm p-6 sm:p-8">
+      <div className="w-full max-w-5xl bg-white rounded-3xl shadow-xl overflow-hidden flex flex-col md:flex-row max-h-[90vh]">
 
-        {/* HEADER */}
+        {/* LEFT SIDE: IMAGE (Hidden on mobile) */}
+        <div className="hidden md:block md:w-1/2 relative bg-indigo-600">
+          <img 
+            src="/findit-illustration.png" 
+            alt="Lost and Found" 
+            className="absolute inset-0 w-full h-full object-cover opacity-90 mix-blend-overlay"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-indigo-900/90 via-indigo-900/20 to-transparent flex flex-col justify-end p-10 text-white">
+            <div className="bg-white/20 backdrop-blur-md p-6 rounded-2xl border border-white/20">
+              <h2 className="text-3xl font-bold mb-2 text-white shadow-sm">Reunite what matters.</h2>
+              <p className="text-indigo-50 font-medium leading-relaxed">
+                Provide as many details as possible to help the community instantly recognize and return the item.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* RIGHT SIDE: FORM */}
+        <div className="w-full md:w-1/2 p-6 sm:p-10 lg:p-12 overflow-y-auto custom-scrollbar">
+
+          {/* HEADER */}
         <div className="mb-6">
           <h1 className="text-2xl font-semibold text-gray-900">
             Post a Report
@@ -167,29 +188,34 @@ export default function NewReport() {
           <div>
             <p className="text-sm font-medium text-gray-700">Images</p>
 
-            <div className="mt-2 border border-dashed border-gray-300 rounded-lg p-4 text-center hover:bg-gray-50 transition">
+            <div className="mt-2 border-2 border-dashed border-gray-300 rounded-xl p-8 text-center hover:bg-gray-50 hover:border-indigo-400 transition-colors flex flex-col items-center justify-center">
+              <UploadCloud className="text-indigo-400 mb-3" size={32} />
               <input
                 type="file"
                 multiple
                 accept="image/*"
                 onChange={(e) => {
-  const selected = Array.from(e.target.files);
+                  const selected = Array.from(e.target.files);
+                  let valid = selected.filter(file => file.size < 2 * 1024 * 1024);
 
-  const valid = selected.filter(file => file.size < 2 * 1024 * 1024);
+                  if (valid.length !== selected.length) {
+                    alert("Some images were excluded because they are too large (max 2MB)");
+                  }
 
-  if (valid.length !== selected.length) {
-    alert("Some images are too large (max 2MB)");
-  }
+                  if (valid.length > 4) {
+                    alert("You can only upload a maximum of 4 images.");
+                    valid = valid.slice(0, 4);
+                  }
 
-  setFiles(valid);
-}}
-
+                  setFiles(valid);
+                }}
                 className="hidden"
                 id="upload"
               />
-              <label htmlFor="upload" className="cursor-pointer text-sm text-gray-500">
+              <label htmlFor="upload" className="cursor-pointer text-sm font-semibold text-indigo-600 hover:text-indigo-700">
                 Click to upload images
               </label>
+              <p className="text-xs text-gray-500 mt-1">PNG, JPG, up to 2MB</p>
             </div>
 
             {/* PREVIEW */}
@@ -212,6 +238,8 @@ export default function NewReport() {
           </button>
 
         </form>
+        </div>
+
       </div>
     </div>
   );

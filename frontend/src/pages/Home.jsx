@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "../api/client";
 import ReportCard from "../components/ReportCard";
+import { Search, Filter, X } from "lucide-react";
 
 export default function Home() {
   const [filters, setFilters] = useState({});
@@ -17,29 +18,33 @@ export default function Home() {
     <div className="min-h-screen bg-gray-50">
 
       {/* 🔍 SEARCH + FILTER */}
-      <div className="bg-white border-b sticky top-16 z-40">
-
+      <div className="bg-white/80 backdrop-blur-md border-b sticky top-16 z-40 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 py-4">
 
           {/* SEARCH */}
           <div className="flex gap-3 mb-3">
-            <input
-              placeholder="Search lost or found items..."
-              className="flex-1 border rounded-xl px-4 py-2 shadow-sm focus:ring-2 focus:ring-indigo-400 outline-none"
-              onChange={(e) =>
-                setFilters((prev) => ({
-                  ...prev,
-                  q: e.target.value,
-                }))
-              }
-            />
+            <div className="relative flex-1">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <Search className="h-5 w-5 text-gray-400" />
+              </div>
+              <input
+                placeholder="Search lost or found items..."
+                className="w-full border border-gray-200 rounded-xl pl-10 pr-4 py-2.5 shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all"
+                onChange={(e) =>
+                  setFilters((prev) => ({
+                    ...prev,
+                    q: e.target.value,
+                  }))
+                }
+              />
+            </div>
 
             {/* MOBILE FILTER BTN */}
             <button
               onClick={() => setShowFilter(true)}
-              className="lg:hidden border px-3 rounded-xl"
+              className="lg:hidden border border-gray-200 bg-white px-3.5 rounded-xl shadow-sm hover:bg-gray-50 flex items-center justify-center text-gray-600 transition"
             >
-              ⚙️
+              <Filter size={20} />
             </button>
           </div>
 
@@ -87,13 +92,21 @@ export default function Home() {
       </div>
 
       {/* 🎯 HERO */}
-      <div className="text-center py-24 bg-gradient-to-r from-indigo-600 to-blue-700 text-white">
-        <h1 className="text-4xl md:text-5xl font-bold">
-          Lost Something? Found Something?
-        </h1>
-        <p className="mt-4 text-sm md:text-lg text-indigo-100">
-          Connect with your community to reunite lost items with their owners
-        </p>
+      <div className="text-center py-20 lg:py-28 bg-gradient-to-br from-indigo-700 via-indigo-600 to-blue-600 text-white shadow-inner relative overflow-hidden">
+        {/* Abstract Background Element */}
+        <div className="absolute top-0 left-0 w-full h-full overflow-hidden opacity-20 pointer-events-none">
+          <div className="absolute -top-24 -left-24 w-96 h-96 rounded-full bg-white blur-3xl"></div>
+          <div className="absolute top-1/2 right-10 w-72 h-72 rounded-full bg-blue-300 blur-3xl"></div>
+        </div>
+
+        <div className="relative z-10 px-4">
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight">
+            Lost Something? <span className="text-indigo-200">Found Something?</span>
+          </h1>
+          <p className="mt-6 text-base md:text-xl text-indigo-100 max-w-2xl mx-auto font-medium">
+            Connect with your community to reunite lost items with their owners quickly and safely.
+          </p>
+        </div>
       </div>
 
       {/* 📦 GRID */}
@@ -116,9 +129,11 @@ export default function Home() {
         <div className="fixed inset-0 bg-black/40 z-50 flex items-end lg:hidden">
           <div className="bg-white w-full rounded-t-2xl p-5 space-y-4 animate-slideUp">
 
-            <div className="flex justify-between">
-              <h3 className="font-semibold text-lg">Filters</h3>
-              <button onClick={() => setShowFilter(false)}>✖</button>
+            <div className="flex justify-between items-center border-b pb-3">
+              <h3 className="font-bold text-xl text-gray-800">Filters</h3>
+              <button onClick={() => setShowFilter(false)} className="p-1 rounded-full hover:bg-gray-100 transition">
+                <X size={24} className="text-gray-500" />
+              </button>
             </div>
 
             <select

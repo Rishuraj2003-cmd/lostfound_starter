@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { api } from "../api/client";
 import ReportCard from "../components/ReportCard";
 import { motion, AnimatePresence } from "framer-motion";
+import { Search, Filter, X, FileQuestion } from "lucide-react";
 
 export default function MyReports() {
   const [filters, setFilters] = useState({});
@@ -28,24 +29,29 @@ export default function MyReports() {
 
       {/* 🔍 SEARCH */}
       <div className="max-w-7xl mx-auto px-4 mt-4">
-        <div className="flex gap-2">
-          <input
-            placeholder="Search your reports..."
-            className="flex-1 bg-white border rounded-xl px-4 py-2 text-sm shadow-sm focus:ring-2 focus:ring-indigo-400 outline-none"
-            onChange={(e) =>
-              setFilters((prev) => ({
-                ...prev,
-                q: e.target.value,
-              }))
-            }
-          />
+        <div className="flex gap-3">
+          <div className="relative flex-1">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <Search className="h-5 w-5 text-gray-400" />
+            </div>
+            <input
+              placeholder="Search your reports..."
+              className="w-full bg-white border border-gray-200 rounded-xl pl-10 pr-4 py-2 text-sm shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all"
+              onChange={(e) =>
+                setFilters((prev) => ({
+                  ...prev,
+                  q: e.target.value,
+                }))
+              }
+            />
+          </div>
 
           {/* MOBILE FILTER BTN */}
           <button
             onClick={() => setShowFilter(true)}
-            className="lg:hidden bg-white border px-3 rounded-xl shadow-sm hover:bg-gray-100"
+            className="lg:hidden bg-white border border-gray-200 px-3.5 rounded-xl shadow-sm hover:bg-gray-50 flex items-center justify-center text-gray-600 transition"
           >
-            ⚙️
+            <Filter size={18} />
           </button>
         </div>
       </div>
@@ -115,8 +121,10 @@ export default function MyReports() {
             </AnimatePresence>
           </div>
         ) : (
-          <div className="text-center text-gray-500 py-20">
-            No reports found 😔
+          <div className="text-center py-24 bg-white rounded-2xl border border-gray-100 shadow-sm mt-6">
+            <FileQuestion size={48} className="mx-auto text-gray-300 mb-4" />
+            <h3 className="text-xl font-bold text-gray-700">No reports found</h3>
+            <p className="text-gray-500 mt-2">You haven't posted any items that match these filters.</p>
           </div>
         )}
       </div>
@@ -127,9 +135,11 @@ export default function MyReports() {
           <div className="bg-white w-full rounded-t-2xl p-5 space-y-4 animate-slideUp">
 
             {/* HEADER */}
-            <div className="flex justify-between items-center">
-              <h3 className="font-semibold text-lg">Filters</h3>
-              <button onClick={() => setShowFilter(false)}>✖</button>
+            <div className="flex justify-between items-center border-b pb-3">
+              <h3 className="font-bold text-lg text-gray-800">Filters</h3>
+              <button onClick={() => setShowFilter(false)} className="p-1 rounded-full hover:bg-gray-100 transition">
+                <X size={20} className="text-gray-500" />
+              </button>
             </div>
 
             {/* STATUS */}

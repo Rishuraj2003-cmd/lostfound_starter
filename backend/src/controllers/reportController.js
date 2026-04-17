@@ -51,7 +51,11 @@ console.log("FILES:", req.files);
 
   } catch (error) {
     console.error("❌ ERROR:", error);
-    res.status(500).json({ message: "Error creating report" });
+    res.status(500).json({ 
+      message: "Error creating report", 
+      error: error.message, 
+      stack: error.stack 
+    });
   }
 }
 

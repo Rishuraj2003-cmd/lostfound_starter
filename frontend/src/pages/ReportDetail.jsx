@@ -11,6 +11,7 @@ export default function ReportDetail() {
   const [report, setReport] = useState(null);
   const [comments, setComments] = useState([]);
   const [text, setText] = useState("");
+  const [activeImage, setActiveImage] = useState(0);
 
   // ✅ FETCH DATA
   useEffect(() => {
@@ -61,13 +62,33 @@ export default function ReportDetail() {
       {/* 🔥 LEFT SIDE */}
       <div className="lg:col-span-2 space-y-4">
 
-        {/* IMAGE */}
-        <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
-          <img
-            src={report.images?.[0] || "/placeholder.jpg"}
-            alt={report.title}
-            className="w-full h-[400px] object-cover"
-          />
+        {/* IMAGE GALLERY */}
+        <div className="bg-white rounded-2xl shadow-sm overflow-hidden p-2">
+          {/* Main Image */}
+          <div className="rounded-xl overflow-hidden bg-gray-100">
+            <img
+              src={report.images?.[activeImage] || "/placeholder.jpg"}
+              alt={report.title}
+              className="w-full h-[350px] md:h-[450px] object-cover transition-opacity duration-300"
+            />
+          </div>
+
+          {/* Thumbnails (Only show if more than 1 image) */}
+          {report.images && report.images.length > 1 && (
+            <div className="flex gap-2 mt-2 overflow-x-auto pb-2 custom-scrollbar">
+              {report.images.map((img, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => setActiveImage(idx)}
+                  className={`relative shrink-0 rounded-lg overflow-hidden h-20 w-24 border-2 transition-all duration-200 ${
+                    activeImage === idx ? "border-indigo-600 opacity-100" : "border-transparent opacity-60 hover:opacity-100"
+                  }`}
+                >
+                  <img src={img} alt={`Thumbnail ${idx + 1}`} className="w-full h-full object-cover" />
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* DETAILS */}

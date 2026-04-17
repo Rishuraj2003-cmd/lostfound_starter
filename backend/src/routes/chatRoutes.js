@@ -154,4 +154,43 @@ router.put("/seen/:conversationId", auth(true), async (req, res) => {
   }
 });
 
+// ==============================
+// 🔹 DELETE SINGLE CHAT
+// ==============================
+router.delete("/:id", auth(true), async (req, res) => {
+  try {
+    const convo = await Conversation.findOneAndDelete({ 
+      _id: req.params.id, 
+      members: req.user.id 
+    });
+
+    if (convo) {
+      await Message.deleteMany({ conversationId: convo._id });
+    }
+
+    res.json({ success: true });
+  } catch (err) {
+    console.error("Delete chat error:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+// ==============================
+// 🔹 DELETE ALL CHATS (SELECT ALL)
+// ==============================
+router.delete("/", auth(true), async (req, res) => {
+  try {
+    const convos = await Conversation.find({ members: req.user.id });
+    const convoIds = convos.map(c => c._id);
+    
+    await Conversation.deleteMany({ _id: { $in: convoIds } });
+    await Message.deleteMany({ conversationId: { $in: convoIds } });
+
+    res.json({ success: true, deletedCount: convoIds.length });
+  } catch (err) {
+    console.error("Delete all chats error:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
 export default router;
